@@ -452,12 +452,12 @@ def process_alignments(
                     ),
                     file=fasta_out_file,
                 )
+        pool.close()
+        pool.join()
 
     fasta.close()
     if fasta_out is not None:
         fasta_out_file.close()
-    pool.close()
-    pool.join()
 
 
 def correct_insertions(sequence, positions, insert_nucs):
