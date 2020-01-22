@@ -66,7 +66,13 @@ class WindowedIndels:
         self._temp_pos = 0
         self._pos = np.inf
         self._ref_name = ""
-        self._ringbuf = [self._next_pos() for i in range(width - 1)]
+        self._ringbuf = []
+        for i in range(width - 1):
+            try:
+                self._ringbuf.append(self._next_pos())
+            except StopIteration:
+                self._ringbuf.append((self._ref_name, self._pos, 0, 0, "", 0, {}))
+
         self._ringbuf.append(None)
 
         self._i = width - 1
