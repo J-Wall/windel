@@ -135,7 +135,7 @@ class WindowedIndels:
         indels : dict
             Dictionary with fields `queryname` : `insertion_length` (-ve for deletion).
         """
-        if self._pos < self._temp_pos - 1:
+        if self._pos < self._temp_pos:
             self._pos += 1
             return self._ref_name, self._pos, 0, 0, "", 0, {}
 
