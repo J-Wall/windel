@@ -233,6 +233,8 @@ def summarise_column(
     summary = dict(
         ref_name=ref_name,
         position=position,
+        coverage=coverage,
+        w_coverage=w_coverage,
         prop_indel=len(indels) / w_coverage if w_coverage > 0 else 0,
         prop_mode=float(length_mode_count / w_coverage) if w_coverage > 0 else 0,
         length_mode=length_mode,
@@ -271,6 +273,8 @@ def get_summary_arrays(
     labels=[
         "ref_name",
         "position",
+        "coverage",
+        "w_coverage",
         "prop_indel",
         "prop_mode",
         "length_mode",
@@ -307,7 +311,7 @@ def get_summary_arrays(
     return tuple(np.array(l) for l in summary_lists)
 
 
-def threshold(alignmentfile, region=None, prop_thresh=0.0, window=11):
+def threshold(alignmentfile, region=None, prop_thresh=0.0, min_coverage=1, window=11):
     """
     Performs windowed indel analysis.
 
@@ -320,6 +324,8 @@ def threshold(alignmentfile, region=None, prop_thresh=0.0, window=11):
     prop_thresh : float
         threshold for the proportion of windowed reads having an indel at a position for
         an edit to be made (default 0.9)
+    min_coverage : int
+        minimum windowed coverage for an edit to be made (default 1)
     window : int
         width of window to use, must be odd (default 11)
 
@@ -339,7 +345,10 @@ def threshold(alignmentfile, region=None, prop_thresh=0.0, window=11):
 
     summaries = []
     for summary in summarise(windowed_indels):
-        if summary["prop_w_indel"] > prop_thresh:
+        if (
+            summary["prop_w_indel"] > prop_thresh
+            and summary["w_coverage"] >= min_coverage
+        ):
             summaries.append(summary)
 
     samfile.close()
@@ -366,6 +375,7 @@ def process_alignments(
     outfile,
     fasta_out=None,
     prop_thresh=0.0,
+    min_coverage=1,
     window=11,
     processes=None,
 ):
@@ -385,6 +395,8 @@ def process_alignments(
     prop_thresh : float
         threshold for the proportion of windowed reads having an indel at a position for
         an edit to be made (default 0.9)
+    min_coverage : int
+        minimum windowed coverage for an edit to be made (default 1)
     window : int
         width of window to use, must be odd (default 11)
     processes : int
@@ -401,6 +413,8 @@ def process_alignments(
             [
                 "ref_name",
                 "position",
+                "coverage",
+                "w_coverage",
                 "prop_indel",
                 "prop_mode",
                 "length_mode",
@@ -425,6 +439,7 @@ def process_alignments(
                         "alignmentfile": alignmentfile,
                         "region": region,
                         "prop_thresh": prop_thresh,
+                        "min_coverage": min_coverage,
                         "window": window,
                     }
                     for region in fasta.references
