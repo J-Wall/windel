@@ -343,12 +343,15 @@ def threshold(alignmentfile, region=None, prop_thresh=0.0, min_coverage=1, windo
     pileup = samfile.pileup(region=region)
     windowed_indels = WindowedIndels(pileup, window)
 
+    previous_indel_pos = 0
     summaries = []
     for summary in summarise(windowed_indels):
         if (
-            summary["prop_w_indel"] > prop_thresh
+            summary["prop_w_mode"] > prop_thresh
             and summary["w_coverage"] >= min_coverage
+            and summary["position"] - previous_indel_pos > window / 2
         ):
+            previous_indel_pos = summary["position"]
             summaries.append(summary)
 
     samfile.close()

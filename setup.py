@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="windel",
-    version="0.0.1",
+    version="0.1.0",
     author="Jesse Wallace",
     author_email="jesse.wallace@anu.edu.au",
     description="Sliding-window indel correction",
