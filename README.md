@@ -26,6 +26,8 @@ FLAGS
         Optional path to corrected fasta output (default None).
     --prop_thresh=PROP_THRESH
         threshold for the proportion of windowed reads having an indel at a position for an edit to be made (default 0.9)
+    --min_coverage=MIN_COVERAGE
+        minimum windowed coverage for an edit to be made (default 1)
     --window=WINDOW
         width of window to use, must be odd (default 11)
     --processes=PROCESSES
