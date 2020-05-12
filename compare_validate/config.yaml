@@ -1,0 +1,2 @@
+simulator_reference: ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.chromosome.1.fa.gz
+pacbio_qc_model: github.com/pfaucon/PBSIM-PacBio-Simulator/raw/master/data/model_qc_clr

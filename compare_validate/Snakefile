@@ -1,0 +1,83 @@
+configfile:
+    "config.yaml"
+
+from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
+from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
+
+FTP = FTPRemoteProvider()
+HTTP = HTTPRemoteProvider()
+
+rule all:
+    input:
+        "simulated/pacbio_0001.fastq"
+
+
+rule get_simulator_reference:
+    input:
+        FTP.remote(config["simulator_reference"], keep_local=True)
+    output:
+        "simulated/reference.fa"
+    shell:
+        "zcat {input} > {output}"
+
+
+rule get_simulator_model:
+    input:
+        HTTP.remote(config["pacbio_qc_model"], keep_local=True)
+    output:
+        "simulated/model_qc_clr"
+    shell:
+        "cp {input} {output}"
+
+
+rule simulate_pacbio_reads:
+    input:
+        reference="simulated/reference.fa",
+        model="simulated/model_qc_clr"
+    output:
+        "simulated/pacbio_0001.fastq",
+        "simulated/pacbio_0001.maf",
+        "simulated/pacbio_0001.ref"
+    shell:
+        "pbsim "
+        "--prefix simulated/pacbio "
+        "--data-type CLR "
+        "--depth 50 "
+        "--model_qc {input.model} "
+        "--length-mean 10000 "
+        "--accuracy-mean 0.85 "
+        "{input.reference}"
+
+
+rule assemble_simulated:
+    input:
+        "simulated/pacbio_0001.fastq",
+        "simulated/reference.fa"
+    output:
+        "simulated/asm.contigs.fasta"
+    shell:
+        "canu "
+        "-pacbio {input[0]} "
+        "-p simulated/asm "
+        "-d canu-pb "
+        "genomeSize=$(wc -c {input[1]} | cut -d' ' -f1 | numfmt --to=si) "
+
+
+rule simulate_illumina_reads:
+    input:
+        reference="simulated/reference.fa"
+    output:
+        "illumina_1.aln",
+        "illumina_1.fq",
+        "illumina_2.aln",
+        "illumina_2.fq"
+    shell:
+        "art_illumina "
+        "-ss HS25 "
+        "-i {input.reference} "
+        "-p "
+        "-l 150 "
+        "-f 50 "
+        "-m 500 "
+        "-s 20 "
+        "-o simulated/illumina_"
