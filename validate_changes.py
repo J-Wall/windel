@@ -24,9 +24,8 @@ for before_loc, after_loc in changes:
     line = f"{before_loc} {after_loc} {before_seq} {after_seq}"
 
     if before_seq != after_seq:
-        print(prev_line)
-        print(line)
-        break
+        print("✓", prev_line)
+        print("✗", line)
 
     prev_line = line
 
