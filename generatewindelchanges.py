@@ -24,5 +24,5 @@ for line in reader:
 
     print(f"{original_coord} {new_coord}")
 
-    print(diff, line["w_length_mode"], file=sys.stderr)
-    diff += int(line["w_length_mode"])
+    print(diff, line["length_mode"], file=sys.stderr)
+    diff += int(line["length_mode"])
