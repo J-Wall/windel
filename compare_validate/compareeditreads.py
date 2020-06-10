@@ -28,6 +28,24 @@ def get_read_indel_dict(alignmentfile, contig, location):
     return d
 
 
+def iterate_indel_dicts(alignmentfile, loci):
+    """
+    Returns a generator which calls get_read_indel_dict for multiple loci
+
+    Parameters
+    ----------
+    alignmentfile : pysam.AlignmentFile
+    loci : iterator
+        With 2-tuple elements of (contig, location) pairs
+
+    Yields
+    ------
+    output of get_read_indel_dict
+    """
+    for locus in loci:
+        yield get_read_indel_dict(alignmentfile, *locus)
+
+
 def locus_venn(d0, d1):
     """
     Make a venn diagram of reads which align to a particular locus and its equivalent
@@ -51,18 +69,16 @@ def locus_venn(d0, d1):
     )
 
 
-def loci_venn(alignmentfile_before, alignmentfile_after, loci_before, loci_after):
+def loci_venn(d_before_iter, d_after_iter):
     """
     Aggregates locus_venn over a list of loci
 
     Parameters
     ----------
-    alignmentfile_before : pysam.AlignmentFile
-    alignmentfile_after : pysam.AlignmentFile
-    loci_before : iterable
-        iterates over (str, int) tuples of (contig, location) pairs
-    loci_after : iterable
-        iterates over (str, int) tuples of (contig, location) pairs
+    d_before_iter : iterable of dicts
+        See iterate_indel_dicts
+    d_after_iter : iterable of dicts
+        See iterate_indel_dicts
 
     Returns
     -------
@@ -70,10 +86,7 @@ def loci_venn(alignmentfile_before, alignmentfile_after, loci_before, loci_after
         Venn diagram made from summing the venn diagrams at each loci
     """
     before_only, both, after_only = 0, 0, 0
-    for locus_before, locus_after in zip(loci_before, loci_after):
-        d_before = get_read_indel_dict(alignmentfile_before, *locus_before)
-        d_after = get_read_indel_dict(alignmentfile_after, *locus_after)
-
+    for d_before, d_after in zip(d_before_iter, d_after_iter):
         locus_before_only, locus_both, locus_after_only = locus_venn(d_before, d_after)
 
         before_only += locus_before_only
@@ -133,7 +146,10 @@ def compare_edit_reads(before_bam, after_bam, changesfile):
     alignmentfile_after = pysam.AlignmentFile(after_bam, "rb")
     loci_before, loci_after = parse_changes(changesfile)
 
-    venn = loci_venn(alignmentfile_before, alignmentfile_after, loci_before, loci_after)
+    d_before_list = list(iterate_indel_dicts(alignmentfile_before, loci_before))
+    d_after_list = list(iterate_indel_dicts(alignmentfile_after, loci_after))
+
+    venn = loci_venn(d_before_list, d_after_list)
     print(f"Before:\t{venn[0]}\nBoth:\t{venn[1]}\nAfter:\t{venn[2]}")
 
 
