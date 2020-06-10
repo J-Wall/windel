@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import fire
-import numpy as np
 import pysam
 
 
@@ -131,6 +130,29 @@ def parse_changes(changesfile):
     return loci_before, loci_after
 
 
+def count_indels(indel_dict_iter):
+    """
+    Parameters
+    ----------
+    indel_dict_iter : iterator of dicts
+        each element is a dict, with read_id : (n_insertions, n_deletions) key : values
+
+    Returns
+    -------
+    tot_insertions : int
+        total number of insertions
+    tot_deletions : int
+        total number of deletions
+    """
+    tot_insertions, tot_deletions = 0, 0
+    for d in indel_dict_iter:
+        n_insertions, n_deletions = zip(*d.values())
+        tot_insertions += sum(n_insertions)
+        tot_deletions += sum(n_deletions)
+
+    return tot_insertions, tot_deletions
+
+
 def compare_edit_reads(before_bam, after_bam, changesfile):
     """
     Parameters
@@ -150,7 +172,17 @@ def compare_edit_reads(before_bam, after_bam, changesfile):
     d_after_list = list(iterate_indel_dicts(alignmentfile_after, loci_after))
 
     venn = loci_venn(d_before_list, d_after_list)
-    print(f"Before:\t{venn[0]}\nBoth:\t{venn[1]}\nAfter:\t{venn[2]}")
+    print(f"Edit loci mapping\nBefore:\t{venn[0]}\nBoth:\t{venn[1]}\nAfter:\t{venn[2]}")
+    print()
+
+    tot_insertions_before, tot_deletions_before = count_indels(d_before_list)
+    tot_insertions_after, tot_deletions_after = count_indels(d_after_list)
+    print("Indel counts for wdit-mapped reads\nBefore:")
+    print(f"\tInsertions:\t{tot_insertions_before}")
+    print(f"\tDeletions:\t{tot_deletions_before}")
+    print("After:")
+    print(f"\tInsertions:\t{tot_insertions_after}")
+    print(f"\tDeletions:\t{tot_deletions_after}")
 
 
 def main():
