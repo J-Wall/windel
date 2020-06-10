@@ -146,7 +146,10 @@ def count_indels(indel_dict_iter):
     """
     tot_insertions, tot_deletions = 0, 0
     for d in indel_dict_iter:
-        n_insertions, n_deletions = zip(*d.values())
+        try:
+            n_insertions, n_deletions = zip(*d.values())
+        except ValueError:
+            continue
         tot_insertions += sum(n_insertions)
         tot_deletions += sum(n_deletions)
 
@@ -172,12 +175,14 @@ def compare_edit_reads(before_bam, after_bam, changesfile):
     d_after_list = list(iterate_indel_dicts(alignmentfile_after, loci_after))
 
     venn = loci_venn(d_before_list, d_after_list)
-    print(f"Edit loci mapping\nBefore:\t{venn[0]}\nBoth:\t{venn[1]}\nAfter:\t{venn[2]}")
+    print("Number of reads mapping to edit loci")
+    print("Note: Reads may be counted twice if edit-loci are close together")
+    print(f"Before:\t{venn[0]}\nBoth:\t{venn[1]}\nAfter:\t{venn[2]}")
     print()
 
     tot_insertions_before, tot_deletions_before = count_indels(d_before_list)
     tot_insertions_after, tot_deletions_after = count_indels(d_after_list)
-    print("Indel counts for wdit-mapped reads\nBefore:")
+    print("Indel counts for edit-mapped reads\nBefore:")
     print(f"\tInsertions:\t{tot_insertions_before}")
     print(f"\tDeletions:\t{tot_deletions_before}")
     print("After:")
