@@ -156,7 +156,13 @@ def count_indels(indel_dict_iter):
     return tot_insertions, tot_deletions
 
 
-def compare_edit_reads(before_bam, after_bam, changesfile):
+def compare_edit_reads(
+    before_bam,
+    after_bam,
+    changesfile,
+    before_readlist_out=None,
+    after_readlist_out=None,
+):
     """
     Parameters
     ----------
@@ -166,6 +172,10 @@ def compare_edit_reads(before_bam, after_bam, changesfile):
         Path to bam file of reads mapped to after genome
     changesfile
         Path to changes file (output of generatewindelchanges.py)
+    before_readlist_out : str
+        Optionally output the list of reads which mapped to edit locations
+    after_readlist_out : str
+        Optionally output the list of reads which mapped to edit locations
     """
     alignmentfile_before = pysam.AlignmentFile(before_bam, "rb")
     alignmentfile_after = pysam.AlignmentFile(after_bam, "rb")
@@ -188,6 +198,22 @@ def compare_edit_reads(before_bam, after_bam, changesfile):
     print("After:")
     print(f"\tInsertions:\t{tot_insertions_after}")
     print(f"\tDeletions:\t{tot_deletions_after}")
+
+    if before_readlist_out is not None:
+        readset = set()
+        readset.update(*d_before_list)
+        readlist = [f"{read}\n" for read in readset]
+        readlist.sort()
+        with open(before_readlist_out, "w") as f:
+            f.writelines(readlist)
+
+    if after_readlist_out is not None:
+        readset = set()
+        readset.update(*d_after_list)
+        readlist = [f"{read}\n" for read in readset]
+        readlist.sort()
+        with open(after_readlist_out, "w") as f:
+            f.writelines(readlist)
 
 
 def main():
