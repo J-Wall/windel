@@ -377,7 +377,7 @@ def process_alignments(
     alignmentfile,
     outfile,
     fasta_out=None,
-    prop_thresh=0.0,
+    prop_thresh=0.9,
     min_coverage=1,
     window=11,
     processes=None,
