@@ -19,5 +19,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.7",
-    install_requires=["fire==0.2", "numpy==1.22.0", "pysam==0.15", "scipy==1.4"],
+    install_requires=["fire==0.2", "numpy==1.22.0", "pysam==0.15", "scipy==1.10.0"],
 )
